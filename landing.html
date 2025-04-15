@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Welcome to StudentSync{% endblock %}
+{% block content %}
+<div class="hero">
+    <h1>StudentSync</h1>
+    <p>Streamline student registration with ease.</p>
+    <div class="hero-buttons">
+        {% if 'username' not in session %}
+        <a href="/login" class="btn btn-primary">Login</a>
+        <a href="/signup" class="btn btn-accent">Sign Up</a>
+        {% else %}
+        <a href="/index" class="btn btn-primary">Dashboard</a>
+        <a href="/logout" class="btn btn-accent">Logout</a>
+        {% endif %}
+    </div>
+</div>
+
+<section class="features">
+    <h2>Why Choose Us?</h2>
+    <div class="feature-grid">
+        <div class="feature-card">
+            <i class="fas fa-user-graduate"></i>
+            <h3>Easy Registration</h3>
+            <p>Simplify student onboarding.</p>
+        </div>
+        <div class="feature-card">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <h3>Smart Uploads</h3>
+            <p>Effortless document handling.</p>
+        </div>
+        <div class="feature-card">
+            <i class="fas fa-robot"></i>
+            <h3>AI Extraction</h3>
+            <p>Automated data processing.</p>
+        </div>
+        <div class="feature-card">
+            <i class="fas fa-file-alt"></i>
+            <h3>Reports</h3>
+            <p>Quick summary generation.</p>
+        </div>
+    </div>
+</section>
+
+<style>
+    .hero {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: var(--text);
+        padding: 3rem 1.5rem;
+        text-align: center;
+        border-radius: 8px;
+    }
+    .hero h1 { font-size: 2rem; font-weight: 600; margin-bottom: 0.5rem; }
+    .hero p { font-size: 1rem; margin-bottom: 1rem; }
+    .hero-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    .features { padding: 3rem 0; text-align: center; }
+    .features h2 { color: var(--secondary); font-size: 1.5rem; margin-bottom: 2rem; }
+    .feature-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+    .feature-card {
+        background: var(--card-bg);
+        padding: 1rem;
+        border-radius: 8px;
+        transition: transform 0.2s ease;
+    }
+    .feature-card:hover { transform: scale(1.02); }
+    .feature-card i { font-size: 1.5rem; color: var(--secondary); margin-bottom: 0.5rem; }
+    .feature-card h3 { font-size: 1rem; color: var(--text); }
+    .feature-card p { font-size: 0.85rem; color: #a0aec0; }
+</style>
+{% endblock %}

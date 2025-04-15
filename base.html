@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %} - StudentSync</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2a4365;
+            --secondary: #4f9df5;
+            --accent: #ed64a6;
+            --success: #38a169;
+            --background: #1a202c;
+            --card-bg: #2d3748;
+            --text: #e2e8f0;
+            --border: #4a5568;
+            --shadow: rgba(0, 0, 0, 0.2);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--background);
+            color: var(--text);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .navbar {
+            background: var(--primary);
+            padding: 0.75rem 1.5rem;
+            box-shadow: 0 2px 8px var(--shadow);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar-brand {
+            color: var(--text);
+            font-size: 1.25rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        .navbar-brand:hover { color: var(--secondary); }
+        .navbar-menu {
+            display: flex;
+            gap: 1.5rem;
+        }
+        .navbar-link {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.4rem 0.8rem;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+        .navbar-link:hover {
+            background: var(--secondary);
+            color: var(--primary);
+        }
+        .container {
+            max-width: 1200px;
+            margin: 4rem auto 1.5rem;
+            padding: 0 1.5rem;
+        }
+        .card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px var(--shadow);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: transform 0.2s ease;
+        }
+        .card:hover { transform: translateY(-2px); }
+        .btn {
+            display: inline-block;
+            padding: 0.5rem 1.25rem;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: none;
+            color: var(--primary);
+            background: var(--secondary);
+        }
+        .btn:hover { background: #4299e1; }
+        .btn-primary { background: var(--secondary); }
+        .btn-success { background: var(--success); color: var(--text); }
+        .btn-accent { background: var(--accent); color: var(--text); }
+
+        @media (max-width: 768px) {
+            .navbar-menu { display: none; }
+            .navbar-brand { font-size: 1.1rem; }
+            .container { padding: 0 1rem; }
+        }
+        {% block styles %}{% endblock %}
+    </style>
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="navbar-brand">StudentSync</a>
+            <div class="navbar-menu">
+                <a href="/" class="navbar-link">Home</a>
+                <a href="/upload" class="navbar-link">Upload</a>
+                <a href="/validate-page" class="navbar-link">Validate</a>
+                <a href="/result" class="navbar-link">Results</a>
+                {% if 'username' in session %}
+                    <a href="/logout" class="navbar-link">Logout</a>
+                {% else %}
+                    <a href="/login" class="navbar-link">Login</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

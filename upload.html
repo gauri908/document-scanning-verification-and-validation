@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Upload Documents{% endblock %}
+{% block content %}
+<div class="card">
+    <h2 class="title">Upload Documents</h2>
+    <div class="student-select">
+        <label for="student-dropdown">Select Student</label>
+        <select id="student-dropdown" name="student" onchange="handleStudentSelection(this)">
+            <option value="">-- Select a Student --</option>
+        </select>
+    </div>
+
+    {% if session.get('student_folder') %}
+    <h3 class="subtitle">Student: {{ session.get('student_fullname') }}</h3>
+    <form method="POST" enctype="multipart/form-data" class="upload-form">
+        {% for key, label in doc_fields.items() %}
+        <div class="upload-row">
+            <label>{{ label }}</label>
+            <div class="upload-group">
+                <input type="file" name="{{ key }}" accept=".jpg,.jpeg,.png,.pdf">
+                {% if uploaded_files.get(key) %}
+                <a href="{{ url_for('view_file', folder=session.get('student_folder'), filename=uploaded_files[key]) }}" 
+                   target="_blank" class="btn btn-success btn-sm">View</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary">Upload</button>
+    </form>
+    {% else %}
+    <p class="info-text">No student selected. <a href="/index" class="link">Add a student</a>.</p>
+    {% endif %}
+</div>
+
+<style>
+    .title { color: var(--secondary); font-size: 1.25rem; margin-bottom: 1rem; }
+    .subtitle { color: var(--text); font-size: 1rem; margin: 1rem 0; Ascendantly }
+    .student-select label { color: var(--text); font-weight: 500; font-size: 0.85rem; }
+    select {
+        padding: 0.5rem;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        font-size: 0.9rem;
+        background: var(--card-bg);
+        color: var(--text);
+        width: 100%;
+        transition: border-color 0.2s ease;
+    }
+    select:focus { border-color: var(--secondary); outline: none; }
+    .upload-form { display: grid; gap: 0.75rem; }
+    .upload-row { display: flex; align-items: center; gap: 0.5rem; }
+    .upload-row label { color: var(--text); font-weight: 500; font-size: 0.85rem; width: 150px; }
+    .upload-group { display: flex; gap: 0.5rem; align-items: center; flex-grow: 1; }
+    .upload-group input { padding: 0.4rem; font-size: 0.9rem; background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); }
+    .btn-sm { padding: 0.3rem 0.75rem; font-size: 0.8rem; }
+    .info-text { text-align: center; margin-top: 1rem; font-size: 0.85rem; }
+    .link { color: var(--secondary); text-decoration: none; }
+    .link:hover { color: var(--accent); }
+</style>
+
+<script>
+    function loadStudents() {
+        fetch('/get-students')
+            .then(response => response.json())
+            .then(students => {
+                const dropdown = document.getElementById('student-dropdown');
+                students.forEach(student => {
+                    const option = document.createElement('option');
+                    option.value = student.folder;
+                    option.text = student.display;
+                    if (student.folder === '{{ session.get('student_folder') }}') option.selected = true;
+                    dropdown.appendChild(option);
+                });
+            });
+    }
+    function handleStudentSelection(select) {
+        const selectedFolder = select.value;
+        if (selectedFolder) {
+            fetch('/select-student', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ student_folder: selectedFolder })
+            })
+            .then(response => response.json())
+            .then(data => { if (data.success) window.location.reload(); });
+        }
+    }
+    window.onload = loadStudents;
+</script>
+{% endblock %}

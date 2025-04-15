@@ -1,0 +1,328 @@
+{% extends "base.html" %}
+{% block title %}Validate Documents{% endblock %}
+{% block content %}
+<div class="container validate-container">
+    <div class="main-card">
+        <h2 class="title">Validate Documents</h2>
+        <div class="student-select">
+            <label for="student-dropdown">Select Student</label>
+            <select id="student-dropdown" name="student" onchange="handleStudentSelection(this)">
+                <option value="">-- Select a Student --</option>
+            </select>
+        </div>
+
+        {% if session.get('student_folder') %}
+        <p class="subtitle">Processing for {{ session.get('student_fullname') }}</p>
+        <div class="button-group">
+            <button onclick="startValidation()" class="btn btn-primary">Extract Text</button>
+            <button onclick="startFieldExtraction()" class="btn btn-primary">Extract Fields</button>
+            <a href="/result" class="btn btn-success">View Results</a>
+        </div>
+        <div class="progress-container">
+            <div id="progress-bar" class="progress-bar"></div>
+        </div>
+        <div class="status-table-container">
+            <table class="status-table">
+                <thead>
+                    <tr>
+                        <th>Document Name</th>
+                        <th>Text Extract Status</th>
+                        <th>Field Extract Status</th>
+                    </tr>
+                </thead>
+                <tbody id="status-table-body">
+                    {% for key, label in doc_fields.items() %}
+                    <tr data-doc="{{ key }}">
+                        <td>{{ label }}</td>
+                        <td class="status" id="text-status-{{ key }}"><i class="fas fa-times"></i></td>
+                        <td class="status" id="field-status-{{ key }}"><i class="fas fa-times"></i></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="info-text">No student selected. <a href="/upload" class="link">Upload documents</a>.</p>
+        {% endif %}
+    </div>
+    <div class="sidebar-card" id="realtime-output">
+        <h3 class="sidebar-title">Real-Time Output</h3>
+        <div class="output-box" id="output-content"></div>
+    </div>
+</div>
+
+<style>
+    .validate-container {
+        display: flex;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+    }
+    .main-card {
+        flex: 2;
+        min-width: 300px;
+    }
+    .sidebar-card {
+        flex: 1;
+        min-width: 250px;
+        background: var(--card-bg);
+        border-radius: 8px;
+        box-shadow: 0 4px 12px var(--shadow);
+        padding: 1rem;
+        max-height: 400px;
+        display: flex;
+        flex-direction: column;
+    }
+    .title { color: var(--secondary); font-size: 1.25rem; margin-bottom: 1rem; }
+    .subtitle { text-align: center; font-size: 0.9rem; margin: 1rem 0; color: var(--text); }
+    .student-select label { color: var(--text); font-weight: 500; font-size: 0.85rem; }
+    select {
+        padding: 0.5rem;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        font-size: 0.9rem;
+        background: var(--card-bg);
+        color: var(--text);
+        width: 100%;
+        transition: border-color 0.2s ease;
+    }
+    select:focus { border-color: var(--secondary); outline: none; }
+    .button-group { display: flex; gap: 1rem; justify-content: center; margin-bottom: 1rem; flex-wrap: wrap; }
+    .progress-container { width: 100%; background: var(--border); border-radius: 10px; height: 6px; margin-bottom: 1rem; }
+    .progress-bar { width: 0%; height: 100%; background: var(--success); border-radius: 10px; transition: width 0.3s ease; }
+    .status-table-container { overflow-x: auto; }
+    .status-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th, td { padding: 0.5rem; border: 1px solid var(--border); text-align: center; }
+    th { background: var(--primary); color: var(--text); font-weight: 500; }
+    td { background: var(--card-bg); }
+    .status i.fa-check { color: var(--success); }
+    .status i.fa-times { color: #e53e3e; }
+    .sidebar-title { color: var(--secondary); font-size: 1rem; margin-bottom: 0.75rem; }
+    .output-box {
+        background: var(--background);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 0.75rem;
+        font-size: 0.8rem;
+        color: var(--text);
+        flex-grow: 1;
+        overflow-y: auto;
+    }
+    .doc-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    .doc-header { font-weight: bold; color: var(--secondary); margin-bottom: 0.25rem; }
+    .field-item { margin: 0.2rem 0; }
+    .loading { color: #888; font-style: italic; }
+    .error { color: #e53e3e; }
+    .info-text { text-align: center; margin-top: 1rem; font-size: 0.85rem; }
+    .link { color: var(--secondary); text-decoration: none; }
+    .link:hover { color: var(--accent); }
+    @media (max-width: 768px) {
+        .validate-container { flex-direction: column; }
+        .sidebar-card { max-height: 200px; }
+    }
+</style>
+
+<script>
+    let progressInterval;
+    let statusPollingInterval;
+
+    // Fixed fields to display
+    const fixedFields = [
+        "name", "father name", "grandfather name", "surname", "DOB", "gender", "pincode"
+    ];
+
+    function loadStudents() {
+        fetch('/get-students')
+            .then(response => response.json())
+            .then(students => {
+                const dropdown = document.getElementById('student-dropdown');
+                students.forEach(student => {
+                    const option = document.createElement('option');
+                    option.value = student.folder;
+                    option.text = student.display;
+                    if (student.folder === '{{ session.get('student_folder') }}') {
+                        option.selected = true;
+                        checkValidationStatus();
+                    }
+                    dropdown.appendChild(option);
+                });
+            });
+    }
+
+    function handleStudentSelection(select) {
+        const selectedFolder = select.value;
+        if (selectedFolder) {
+            fetch('/select-student', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ student_folder: selectedFolder })
+            })
+            .then(response => response.json())
+            .then(data => { if (data.success) window.location.reload(); });
+        }
+    }
+
+    function checkValidationStatus() {
+        fetch('/check-validation-status')
+            .then(response => response.json())
+            .then(data => {
+                const outputBox = document.getElementById('output-content');
+                if (data.status === 'needs_upload') {
+                    outputBox.innerHTML = "<div>No documents found.</div>";
+                } else if (data.status === 'needs_validation') {
+                    outputBox.innerHTML = "<div>Documents ready for extraction.</div>";
+                } else if (data.status === 'validated') {
+                    outputBox.innerHTML = "<div>Validation complete.</div>";
+                    updateStatusFromFiles();
+                }
+            });
+    }
+
+    function updateStatusFromFiles() {
+        fetch('/check-extraction-status')
+            .then(response => response.json())
+            .then(data => {
+                for (const [doc, hasText] of Object.entries(data.text)) {
+                    const textStatusElement = document.getElementById(`text-status-${doc}`);
+                    if (textStatusElement) {
+                        textStatusElement.innerHTML = hasText ? '<i class="fas fa-check"></i>' : '<i class="fas fa-times"></i>';
+                    }
+                }
+                for (const [doc, hasFields] of Object.entries(data.fields)) {
+                    const fieldStatusElement = document.getElementById(`field-status-${doc}`);
+                    if (fieldStatusElement) {
+                        fieldStatusElement.innerHTML = hasFields ? '<i class="fas fa-check"></i>' : '<i class="fas fa-times"></i>';
+                    }
+                }
+            });
+    }
+
+    function startProgress() {
+        const progressBar = document.getElementById("progress-bar");
+        let width = 0;
+        progressInterval = setInterval(() => {
+            if (width < 90) {
+                width += 10;
+                progressBar.style.width = `${width}%`;
+            }
+        }, 300);
+    }
+
+    function stopProgress() {
+        clearInterval(progressInterval);
+        const progressBar = document.getElementById("progress-bar");
+        progressBar.style.width = "100%";
+        setTimeout(() => progressBar.style.width = "0%", 300);
+    }
+
+    function startStatusPolling() {
+        statusPollingInterval = setInterval(updateStatusFromFiles, 1000);
+    }
+
+    function stopStatusPolling() {
+        clearInterval(statusPollingInterval);
+    }
+
+    function createDocCard(docName, state, fields = null, message = null) {
+        const outputBox = document.getElementById('output-content');
+        let card = document.getElementById(`card-${docName}`);
+        if (!card) {
+            card = document.createElement('div');
+            card.id = `card-${docName}`;
+            card.className = 'doc-card';
+            outputBox.appendChild(card);
+        }
+
+        let html = `<div class="doc-header">${docName}</div>`;
+        if (state === 'loading-text') {
+            html += `<div class="field-item loading">Extracting text...</div>`;
+        } else if (state === 'loading-fields') {
+            fixedFields.forEach(field => {
+                html += `<div class="field-item">${field}: <span class="loading">Loading...</span></div>`;
+            });
+        } else if (state === 'fields' && fields) {
+            fixedFields.forEach(field => {
+                html += `<div class="field-item">${field}: ${fields[field] || '-'}</div>`;
+            });
+        } else if (state === 'skipped') {
+            html += `<div class="field-item">${message}</div>`;
+        } else if (state === 'error') {
+            html += `<div class="field-item error">${message}</div>`;
+        }
+
+        card.innerHTML = html;
+        outputBox.scrollTop = outputBox.scrollHeight;
+    }
+
+    function startValidation() {
+        const outputBox = document.getElementById("output-content");
+        outputBox.innerHTML = ""; // Clear previous content
+        startProgress();
+        startStatusPolling();
+        const eventSource = new EventSource("/validate");
+        eventSource.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            if (data.status === 'done') {
+                stopProgress();
+                stopStatusPolling();
+                updateStatusFromFiles();
+                eventSource.close();
+            } else if (data.status === 'success') {
+                createDocCard(data.doc, 'loading-text');
+            } else if (data.status === 'skipped') {
+                createDocCard(data.doc, 'skipped', null, data.message);
+            } else if (data.status === 'error') {
+                createDocCard(data.doc, 'error', null, data.message);
+            }
+        };
+        eventSource.onerror = function() {
+            outputBox.innerHTML = "<div class='error'>Error during text extraction.</div>";
+            stopProgress();
+            stopStatusPolling();
+            updateStatusFromFiles();
+            eventSource.close();
+        };
+    }
+
+    function startFieldExtraction() {
+        const outputBox = document.getElementById("output-content");
+        outputBox.innerHTML = ""; // Clear previous content
+        startProgress();
+        startStatusPolling();
+        const eventSource = new EventSource("/extract-fields");
+        eventSource.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            if (data.status === 'done') {
+                stopProgress();
+                stopStatusPolling();
+                updateStatusFromFiles();
+                eventSource.close();
+            } else if (data.status === 'success') {
+                if (data.fields) {
+                    createDocCard(data.doc, 'fields', data.fields);
+                } else {
+                    createDocCard(data.doc, 'loading-fields');
+                }
+            } else if (data.status === 'skipped') {
+                createDocCard(data.doc, 'skipped', null, data.message);
+            } else if (data.status === 'error') {
+                createDocCard(data.doc, 'error', null, data.message);
+            }
+        };
+        eventSource.onerror = function() {
+            outputBox.innerHTML = "<div class='error'>Error during field extraction.</div>";
+            stopProgress();
+            stopStatusPolling();
+            updateStatusFromFiles();
+            eventSource.close();
+        };
+    }
+
+    window.onload = loadStudents;
+</script>
+{% endblock %}

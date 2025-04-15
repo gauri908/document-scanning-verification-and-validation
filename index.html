@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Add Student{% endblock %}
+{% block content %}
+<div class="card">
+    <h1 class="title">Add New Student</h1>
+    <form method="POST" onsubmit="return validateForm()" class="form-grid">
+        <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" pattern="[A-Za-z]+" title="Only letters" required>
+        </div>
+        <div class="form-group">
+            <label for="father_name">Father's Name</label>
+            <input type="text" id="father_name" name="father_name" pattern="[A-Za-z]+" title="Only letters" required>
+        </div>
+        <div class="form-group">
+            <label for="grandfather_name">Grandfather's Name</label>
+            <input type="text" id="grandfather_name" name="grandfather_name" pattern="[A-Za-z]+" title="Only letters" required>
+        </div>
+        <div class="form-group">
+            <label for="surname">Surname</label>
+            <input type="text" id="surname" name="surname" pattern="[A-Za-z]+" title="Only letters" required>
+        </div>
+        <div class="form-group">
+            <label for="dob">Date of Birth</label>
+            <input type="date" id="dob" name="dob" required>
+        </div>
+        <div class="form-group">
+            <label for="gender">Gender</label>
+            <select id="gender" name="gender" required>
+                <option value="M">Male</option>
+                <option value="F">Female</option>
+                <option value="Other">Other</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="pincode">Pincode</label>
+            <input type="text" id="pincode" name="pincode" pattern="\d{6}" title="6-digit pincode" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Add Student</button>
+    </form>
+</div>
+
+<style>
+    .title { color: var(--secondary); font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; }
+    .form-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+    .form-group label { color: var(--text); font-weight: 500; font-size: 0.85rem; }
+    .form-group input, .form-group select {
+        padding: 0.5rem;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        font-size: 0.9rem;
+        background: var(--card-bg);
+        color: var(--text);
+        width: 100%;
+        transition: border-color 0.2s ease;
+    }
+    .form-group input:focus, .form-group select:focus {
+        border-color: var(--secondary);
+        outline: none;
+    }
+</style>
+<script>
+    function validateForm() {
+        const name = document.getElementById('name').value.trim();
+        const fatherName = document.getElementById('father_name').value.trim();
+        const grandfatherName = document.getElementById('grandfather_name').value.trim();
+        const surname = document.getElementById('surname').value.trim();
+        const dob = document.getElementById('dob').value.trim();
+        const gender = document.getElementById('gender').value.trim();
+        const pincode = document.getElementById('pincode').value.trim();
+        const regex = /^[A-Za-z]+$/;
+        const pincodeRegex = /^\d{6}$/;
+
+        if (!regex.test(name) || !regex.test(fatherName) || !regex.test(grandfatherName) || !regex.test(surname)) {
+            alert("Names must contain only letters.");
+            return false;
+        }
+        if (!dob || !gender || !pincodeRegex.test(pincode)) {
+            alert("Please fill all fields correctly.");
+            return false;
+        }
+        return true;
+    }
+</script>
+{% endblock %}

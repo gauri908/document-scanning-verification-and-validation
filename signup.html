@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Sign Up{% endblock %}
+{% block content %}
+<div class="card" style="max-width: 350px; margin: 0 auto;">
+    <h2 class="title">Sign Up</h2>
+    {% if error %}
+    <p class="error">{{ error }}</p>
+    {% endif %}
+    <form method="POST" class="form-grid">
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" required>
+        </div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        <div class="form-group">
+            <label for="confirm_password">Confirm Password</label>
+            <input type="password" id="confirm_password" name="confirm_password" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Sign Up</button>
+    </form>
+    <p class="info-text">Already have an account? <a href="/login" class="link">Login</a></p>
+</div>
+
+<style>
+    .title { color: var(--secondary); font-size: 1.25rem; text-align: center; margin-bottom: 1rem; }
+    .error { color: var(--accent); text-align: center; font-size: 0.85rem; margin-bottom: 1rem; }
+    .form-grid { display: grid; gap: 1rem; }
+    .form-group label { color: var(--text); font-weight: 500; font-size: 0.85rem; }
+    .form-group input {
+        padding: 0.5rem;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        font-size: 0.9rem;
+        background: var(--card-bg);
+        color: var(--text);
+        transition: border-color 0.2s ease;
+    }
+    .form-group input:focus { border-color: var(--secondary); outline: none; }
+    .info-text { text-align: center; margin-top: 1rem; font-size: 0.85rem; }
+    .link { color: var(--secondary); text-decoration: none; }
+    .link:hover { color: var(--accent); }
+</style>
+{% endblock %}

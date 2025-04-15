@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Summary Report{% endblock %}
+{% block content %}
+<div class="card">
+    <h2 class="title">Summary Report</h2>
+    <p class="subtitle">Student: {{ session.get('student_fullname') }}</p>
+    <div class="summary-content">{{ summary_text | safe }}</div>
+    <div class="button-group">
+        <a href="/result" class="btn btn-primary">Back to Results</a>
+    </div>
+</div>
+
+<style>
+    .title { color: var(--secondary); font-size: 1.25rem; margin-bottom: 1rem; }
+    .subtitle { color: var(--text); font-size: 0.9rem; margin-bottom: 1rem; }
+    .summary-content {
+        background: var(--background);
+        padding: 1rem;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        white-space: pre-wrap;
+        font-size: 0.85rem;
+        margin-bottom: 1rem;
+    }
+    .button-group { display: flex; justify-content: center; }
+</style>
+{% endblock %}

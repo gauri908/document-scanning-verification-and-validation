@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% block title %}Verification Results{% endblock %}
+{% block content %}
+<div class="card">
+    <h2 class="title">Verification Results</h2>
+    <div class="student-select">
+        <label for="student-dropdown">Select Student</label>
+        <select id="student-dropdown" name="student" onchange="handleStudentSelection(this)">
+            <option value="">-- Select a Student --</option>
+        </select>
+    </div>
+
+    {% if session.get('student_folder') %}
+        {% if pending_step == "upload" %}
+            <p class="info-text">No documents uploaded for {{ session.get('student_fullname') }}.</p>
+            <div class="button-group">
+                <a href="/upload" class="btn btn-primary">Go to Upload</a>
+            </div>
+        {% elif pending_step == "validate" %}
+            <p class="info-text">Validate documents for {{ session.get('student_fullname') }}.</p>
+            <div class="button-group">
+                <a href="/validate-page" class="btn btn-primary">Go to Validation</a>
+            </div>
+        {% elif user_input or extracted_data %}
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Field</th>
+                            <th>User Input</th>
+                            {% for doc in doc_fields.keys() %}
+                            <th>{{ doc_fields[doc] }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Name</td>
+                            <td>{{ user_input.get('name', '-') }}</td>
+                            {% for doc in doc_fields.keys() %}
+                            <td class="{{ 'match' if extracted_data.get(doc, {}).get('name', '').lower() == user_input.get('name', '').lower() and extracted_data.get(doc, {}).get('name') != 'NA' and user_input.get('name') != 'NA' else 'no-match' if extracted_data.get(doc, {}).get('name', '').lower() != user_input.get('name', '').lower() and extracted_data.get(doc, {}).get('name') != 'NA' and user_input.get('name') != 'NA' else '' }}">
+                                {{ extracted_data.get(doc, {}).get('name', '-') }}
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td>Father's Name</td>
+                            <td>{{ user_input.get('father_name', '-') }}</td>
+                            {% for doc in doc_fields.keys() %}
+                            <td class="{{ 'match' if extracted_data.get(doc, {}).get('father name', '').lower() == user_input.get('father_name', '').lower() and extracted_data.get(doc, {}).get('father name') != 'NA' and user_input.get('father_name') != 'NA' else 'no-match' if extracted_data.get(doc, {}).get('father name', '').lower() != user_input.get('father_name', '').lower() and extracted_data.get(doc, {}).get('father name') != 'NA' and user_input.get('father_name') != 'NA' else '' }}">
+                                {{ extracted_data.get(doc, {}).get('father name', '-') }}
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td>Grandfather's Name</td>
+                            <td>{{ user_input.get('grandfather_name', '-') }}</td>
+                            {% for doc in doc_fields.keys() %}
+                            <td class="{{ 'match' if extracted_data.get(doc, {}).get('grandfather name', '').lower() == user_input.get('grandfather_name', '').lower() and extracted_data.get(doc, {}).get('grandfather name') != 'NA' and user_input.get('grandfather_name') != 'NA' else 'no-match' if extracted_data.get(doc, {}).get('grandfather name', '').lower() != user_input.get('grandfather_name', '').lower() and extracted_data.get(doc, {}).get('grandfather name') != 'NA' and user_input.get('grandfather_name') != 'NA' else '' }}">
+                                {{ extracted_data.get(doc, {}).get('grandfather name', '-') }}
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td>Surname</td>
+                            <td>{{ user_input.get('surname', '-') }}</td>
+                            {% for doc in doc_fields.keys() %}
+                            <td class="{{ 'match' if extracted_data.get(doc, {}).get('surname', '').lower() == user_input.get('surname', '').lower() and extracted_data.get(doc, {}).get('surname') != 'NA' and user_input.get('surname') != 'NA' else 'no-match' if extracted_data.get(doc, {}).get('surname', '').lower() != user_input.get('surname', '').lower() and extracted_data.get(doc, {}).get('surname') != 'NA' and user_input.get('surname') != 'NA' else '' }}">
+                                {{ extracted_data.get(doc, {}).get('surname', '-') }}
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td>Date of Birth</td>
+                            <td>{{ user_input.get('dob', '-') }}</td>
+                            {% for doc in doc_fields.keys() %}
+                            <td class="{{ 'match' if extracted_data.get(doc, {}).get('DOB', '').lower() == user_input.get('dob', '').lower() and extracted_data.get(doc, {}).get('DOB') != 'NA' and user_input.get('dob') != 'NA' else 'no-match' if extracted_data.get(doc, {}).get('DOB', '').lower() != user_input.get('dob', '').lower() and extracted_data.get(doc, {}).get('DOB') != 'NA' and user_input.get('dob') != 'NA' else '' }}">
+                                {{ extracted_data.get(doc, {}).get('DOB', '-') }}
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td>Gender</td>
+                            <td>{{ user_input.get('gender', '-') }}</td>
+                            {% for doc in doc_fields.keys() %}
+                            <td class="{{ 'match' if extracted_data.get(doc, {}).get('gender', '').lower() == user_input.get('gender', '').lower() and extracted_data.get(doc, {}).get('gender') != 'NA' and user_input.get('gender') != 'NA' else 'no-match' if extracted_data.get(doc, {}).get('gender', '').lower() != user_input.get('gender', '').lower() and extracted_data.get(doc, {}).get('gender') != 'NA' and user_input.get('gender') != 'NA' else '' }}">
+                                {{ extracted_data.get(doc, {}).get('gender', '-') }}
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td>Pincode</td>
+                            <td>{{ user_input.get('pincode', '-') }}</td>
+                            {% for doc in doc_fields.keys() %}
+                            <td class="{{ 'match' if extracted_data.get(doc, {}).get('pincode', '').lower() == user_input.get('pincode', '').lower() and extracted_data.get(doc, {}).get('pincode') != 'NA' and user_input.get('pincode') != 'NA' else 'no-match' if extracted_data.get(doc, {}).get('pincode', '').lower() != user_input.get('pincode', '').lower() and extracted_data.get(doc, {}).get('pincode') != 'NA' and user_input.get('pincode') != 'NA' else '' }}">
+                                {{ extracted_data.get(doc, {}).get('pincode', '-') }}
+                            </td>
+                            {% endfor %}
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="button-group">
+                <a href="/validate-page" class="btn btn-primary">Back to Validation</a>
+                <a href="/export" class="btn btn-success">Export to Excel</a>
+            </div>
+        {% else %}
+            <p class="info-text">No data available for {{ session.get('student_fullname') }}.</p>
+        {% endif %}
+    {% else %}
+        <p class="info-text">Please select a student above.</p>
+    {% endif %}
+</div>
+
+<style>
+    .title { color: var(--secondary); font-size: 1.25rem; margin-bottom: 1rem; }
+    .student-select label { color: var(--text); font-weight: 500; font-size: 0.85rem; }
+    select {
+        padding: 0.5rem;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        font-size: 0.9rem;
+        background: var(--card-bg);
+        color: var(--text);
+        width: 100%;
+        transition: border-color 0.2s ease;
+    }
+    select:focus { border-color: var(--secondary); outline: none; }
+    .table-container { overflow-x: auto; margin-top: 1rem; }
+    .data-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th, td { padding: 0.5rem; border: 1px solid var(--border); text-align: left; }
+    th { background: var(--primary); color: var(--text); font-weight: 500; }
+    td { background: var(--card-bg); }
+    .match { background: #2f855a; } /* Green for match */
+    .no-match { background: #c53030; } /* Red for mismatch */
+    .button-group { display: flex; gap: 1rem; justify-content: center; margin-top: 1rem; flex-wrap: wrap; }
+    .info-text { text-align: center; margin: 1rem 0; font-size: 0.85rem; }
+</style>
+
+<script>
+    function loadStudents() {
+        fetch('/get-students')
+            .then(response => response.json())
+            .then(students => {
+                const dropdown = document.getElementById('student-dropdown');
+                students.forEach(student => {
+                    const option = document.createElement('option');
+                    option.value = student.folder;
+                    option.text = student.display;
+                    if (student.folder === '{{ session.get('student_folder') }}') option.selected = true;
+                    dropdown.appendChild(option);
+                });
+            });
+    }
+    function handleStudentSelection(select) {
+        const selectedFolder = select.value;
+        if (selectedFolder) {
+            fetch('/select-student', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ student_folder: selectedFolder })
+            })
+            .then(response => response.json())
+            .then(data => { if (data.success) window.location.reload(); });
+        }
+    }
+    window.onload = loadStudents;
+</script>
+{% endblock %}
