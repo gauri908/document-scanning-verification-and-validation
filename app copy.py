@@ -159,72 +159,6 @@ def validate_documents():  # Renamed for consistency
 def view_file(folder, filename):
     return send_from_directory(os.path.join(app.config['UPLOAD_FOLDER'], folder), filename)
 
-# @app.route('/validate')
-# @login_required
-# def validate():
-#     folder_name = session.get('student_folder')
-#     if not folder_name:
-#         return "No folder selected", 400
-
-#     folder_path = os.path.join(app.config['UPLOAD_FOLDER'], folder_name)
-
-#     def generate():
-#         for filename in os.listdir(folder_path):
-#             if filename.lower().endswith(('.pdf', '.png', '.jpg', '.jpeg')):
-#                 base_name = os.path.splitext(filename)[0]
-#                 txt_path = os.path.join(folder_path, f"{base_name}.txt")
-#                 if os.path.exists(txt_path):
-#                     yield f"data:{json.dumps({'doc': base_name, 'status': 'skipped', 'message': 'Already exists'})}\n\n"
-#                     continue
-#                 file_path = os.path.join(folder_path, filename)
-#                 try:
-#                     message = extract_text_from_file(file_path, folder_path)
-#                     yield f"data:{json.dumps({'doc': base_name, 'status': 'success', 'message': message})}\n\n"
-#                 except Exception as e:
-#                     yield f"data:{json.dumps({'doc': base_name, 'status': 'error', 'message': str(e)})}\n\n"
-#                 time.sleep(0.5)
-#         yield f"data:{json.dumps({'status': 'done'})}\n\n"
-#     return Response(generate(), mimetype='text/event-stream')
-
-# @app.route('/extract-fields')
-# @login_required
-# def extract_fields_route():
-#     folder_name = session.get('student_folder')
-#     if not folder_name:
-#         return "No folder selected", 400
-
-#     folder_path = os.path.join(app.config['UPLOAD_FOLDER'], folder_name)
-#     all_fields_path = os.path.join(folder_path, "all_fields.json")
-
-#     if os.path.exists(all_fields_path):
-#         with open(all_fields_path, "r", encoding="utf-8") as f:
-#             all_data = json.load(f)
-#     else:
-#         all_data = {}
-
-#     def generate():
-#         for filename in os.listdir(folder_path):
-#             if filename.lower().endswith('.txt'):
-#                 doc_name = os.path.splitext(filename)[0]
-#                 if doc_name in all_data:
-#                     yield f"data:{json.dumps({'doc': doc_name, 'status': 'skipped', 'message': 'Already extracted'})}\n\n"
-#                     continue
-#                 file_path = os.path.join(folder_path, filename)
-#                 try:
-#                     result = extract_fields(file_path)
-#                     if "error" in result:
-#                         yield f"data:{json.dumps({'doc': doc_name, 'status': 'error', 'message': result['error']})}\n\n"
-#                     else:
-#                         all_data[doc_name] = result
-#                         with open(all_fields_path, "w", encoding="utf-8") as f:
-#                             json.dump(all_data, f, indent=4, ensure_ascii=False)
-#                         yield f"data:{json.dumps({'doc': doc_name, 'status': 'success', 'message': 'Fields extracted'})}\n\n"
-#                 except Exception as e:
-#                     yield f"data:{json.dumps({'doc': doc_name, 'status': 'error', 'message': str(e)})}\n\n"
-#                 time.sleep(0.5)
-#         yield f"data:{json.dumps({'status': 'done'})}\n\n"
-#     return Response(generate(), mimetype='text/event-stream')
-
 @app.route('/validate')
 @login_required
 def validate():
@@ -240,7 +174,7 @@ def validate():
                 base_name = os.path.splitext(filename)[0]
                 txt_path = os.path.join(folder_path, f"{base_name}.txt")
                 if os.path.exists(txt_path):
-                    yield f"data:{json.dumps({'doc': base_name, 'status': 'skipped', 'message': 'Text already extracted'})}\n\n"
+                    yield f"data:{json.dumps({'doc': base_name, 'status': 'skipped', 'message': 'Already exists'})}\n\n"
                     continue
                 file_path = os.path.join(folder_path, filename)
                 try:
@@ -273,7 +207,7 @@ def extract_fields_route():
             if filename.lower().endswith('.txt'):
                 doc_name = os.path.splitext(filename)[0]
                 if doc_name in all_data:
-                    yield f"data:{json.dumps({'doc': doc_name, 'status': 'skipped', 'message': 'Fields already extracted'})}\n\n"
+                    yield f"data:{json.dumps({'doc': doc_name, 'status': 'skipped', 'message': 'Already extracted'})}\n\n"
                     continue
                 file_path = os.path.join(folder_path, filename)
                 try:
@@ -284,7 +218,7 @@ def extract_fields_route():
                         all_data[doc_name] = result
                         with open(all_fields_path, "w", encoding="utf-8") as f:
                             json.dump(all_data, f, indent=4, ensure_ascii=False)
-                        yield f"data:{json.dumps({'doc': doc_name, 'status': 'success', 'fields': result})}\n\n"
+                        yield f"data:{json.dumps({'doc': doc_name, 'status': 'success', 'message': 'Fields extracted'})}\n\n"
                 except Exception as e:
                     yield f"data:{json.dumps({'doc': doc_name, 'status': 'error', 'message': str(e)})}\n\n"
                 time.sleep(0.5)
